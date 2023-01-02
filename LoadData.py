@@ -2,7 +2,7 @@ from scipy.io import loadmat
 from scipy import ndimage
 import numpy as np
 import matplotlib.pyplot as plt
-
+import os
 
 class LoadDigits:
     def __init__(self, mat_path):
@@ -60,6 +60,11 @@ class LoadDigits:
                 column.imshow(arr.reshape(-1, 20, 20)[label_index][j][0], cmap='gray')
         plt.show()
 
+    # Saving features and labels in .npy format
+    @staticmethod
+    def save(file, filename):
+        np.save(os.path.join('dataset', f'{filename}.npy'), file)
+
 
 DATASET_PATH = "dataset/Data_hoda_full.mat"
 load_digits = LoadDigits(DATASET_PATH)
@@ -67,3 +72,8 @@ features, labels = load_digits.features, load_digits.labels
 features_array = load_digits.resize(features)
 load_digits.plot_digits(features_array, labels)
 X_train, X_test, y_train, y_test = load_digits.train_test_split(features_array, labels)
+load_digits.save('X_train', X_train)
+load_digits.save('X_test', X_test)
+load_digits.save('y_train', y_train)
+load_digits.save('y_test', y_test)
+
