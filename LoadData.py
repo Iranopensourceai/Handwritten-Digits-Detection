@@ -62,7 +62,7 @@ class LoadDigits:
 
     # Saving features and labels in .npy format
     @staticmethod
-    def save(file, filename):
+    def save(filename, file):
         np.save(os.path.join('dataset', f'{filename}.npy'), file)
 
 
@@ -70,7 +70,7 @@ DATASET_PATH = "dataset/Data_hoda_full.mat"
 load_digits = LoadDigits(DATASET_PATH)
 features, labels = load_digits.features, load_digits.labels
 features_array = load_digits.resize(features)
-load_digits.plot_digits(features_array, labels)
+# load_digits.plot_digits(features_array, labels)
 X_train, X_test, y_train, y_test = load_digits.train_test_split(features_array, labels)
 load_digits.save('X_train', X_train)
 load_digits.save('X_test', X_test)
