@@ -1,10 +1,8 @@
 # Classification-handwritten-of-Persian-digits-
-Classification handwritten of Persian digits using image 
+ 
+    
+   
+## Dataset
+The dataset used in this work includes 60,000 data for training,20,000 for testing and more than 22,000 as RemainingSamples.Data set is in format .mat
 
-## Getting Started
- The code runs on Python 3
-     
-     pip install numpy
-     pip install scipy
-     pip install matplotlib
-     
+
