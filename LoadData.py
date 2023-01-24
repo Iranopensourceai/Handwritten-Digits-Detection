@@ -4,21 +4,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 from skimage.transform import resize
-from sklearn.neighbors import KNeighborsClassifier
-# import cv2
 
 
 class LoadDigits:
-    def __init__(self, train_mat_path, test_mat_path):
+    def __init__(self, train_mat_path, test_mat_path, remaining_mat_path):
         self.train_mat_path = train_mat_path
         self.test_mat_path = test_mat_path
-        self.train_features = np.squeeze(self.load_dict(self.train_mat_path)["Data"])
-        self.train_labels = self.load_dict(self.train_mat_path)["labels"]
-        self.test_features = np.squeeze(self.load_dict(self.test_mat_path)["Data"])
-        self.test_labels = self.load_dict(self.test_mat_path)["labels"]
+        self.remaining_mat_path = remaining_mat_path
 
     # Parsing .mat file into dictionary
-    def load_dict(self, mat_path):
+    @staticmethod
+    def load_dict(mat_path):
         return loadmat(mat_path)
 
     # Method for resizing all arrays to a single shape
@@ -46,28 +42,37 @@ class LoadDigits:
             mat[mat > 80] = 255
             mat[mat <= 80] = 0
             final_array[i] = mat.reshape(desire_shape[0]*desire_shape[1])
-        return final_array
+        return final_array/255
 
     @staticmethod
     def skimage_resize(images, desire_shape=(20, 20)):
         array = np.zeros((images.shape[0], desire_shape[0]*desire_shape[1]))
         for i, img in enumerate(images):
             img = resize(img, desire_shape)
-            array[i] = img.reshape(100)
-        return array
+            array[i] = img.reshape((desire_shape[0]*desire_shape[1]))
+        return array/255
 
     # Splitting data to train set and test set
-    def train_test_split(self, features, labels, train_size=0.8):
-        features = features/255
-        labels = labels
-        train_index = int(features.shape[0] * train_size)
-        X_train, X_test = features[:train_index], features[train_index:]
-        y_train, y_test = labels[:train_index], labels[train_index:]
-        return X_train, X_test, y_train.ravel(), y_test.ravel()
+    def read_dataset(self, val='remaining'):
+        train_images = np.squeeze(self.load_dict(self.train_mat_path)["Data"])
+        train_labels = self.load_dict(self.train_mat_path)["labels"]
+        if val == 'remaining':
+            test_images = np.squeeze(self.load_dict(self.test_mat_path)["Data"])
+            test_labels = self.load_dict(self.test_mat_path)["labels"]
+            val_images = np.squeeze(self.load_dict(self.remaining_mat_path)["Data"])
+            val_labels = self.load_dict(self.remaining_mat_path)["labels"]
+        elif val == 'test':
+            test_images = np.squeeze(self.load_dict(self.remaining_mat_path)["Data"])
+            test_labels = self.load_dict(self.remaining_mat_path)["labels"]
+            val_images = np.squeeze(self.load_dict(self.test_mat_path)["Data"])
+            val_labels = self.load_dict(self.test_mat_path)["labels"]
+        else:
+            raise ValueError("Invalid name for val argument use 'remaining' or 'test'")
+        return train_images, train_labels, test_images, test_labels.ravel(), val_images.ravel(), val_labels.ravel()
 
     # Plot 10 images from each 10 digit classes
     @staticmethod
-    def plot_digits(arr, label, images_shape=(10, 10)):
+    def plot_digits(arr, label, images_shape=(20, 20)):
         fig, ax = plt.subplots(10, 10, figsize=(20, 20))
         for i, row in enumerate(ax):
             label_index = np.argwhere(label == i)
@@ -83,24 +88,26 @@ class LoadDigits:
 
 TRAIN_DATASET_PATH = "dataset/Data_hoda_full.mat"
 TEST_DATASET_PATH = "dataset/Test_20000.Mat"
-load_digits = LoadDigits(TRAIN_DATASET_PATH, TEST_DATASET_PATH)
-X_train, y_train = load_digits.train_features, load_digits.train_labels
-X_test, y_test = load_digits.test_features, load_digits.test_labels
+VAL_DATASET_PATH = "dataset/Remainingset_Hoda.Mat"
+load_digits = LoadDigits(TRAIN_DATASET_PATH, TEST_DATASET_PATH, VAL_DATASET_PATH)
+
+# pass 'remaining' or 'test' to choose your validation dataset
+img_train, label_train, img_test, label_test, img_val, label_val = load_digits.read_dataset(val='remaining')
 
 # Also you can use load_digits.resize() method instead. Try both of them and compare the results
-X_train = load_digits.resize(X_train)
-X_test = load_digits.resize(X_test)
+img_train = load_digits.skimage_resize(img_train)
+img_test = load_digits.skimage_resize(img_test)
+img_val = load_digits.skimage_resize(img_val)
 
-load_digits.plot_digits(X_train, y_train)
-load_digits.plot_digits(X_test, y_test)
+load_digits.plot_digits(img_train, label_train)
+load_digits.plot_digits(img_test, label_test)
+load_digits.plot_digits(img_val, label_val)
 
-# In case there is a need for validation data
-# X_train, X_val, y_train, y_val = load_digits.train_test_split(X_train, y_train)
 
 # Saving arrays (if needed)
-load_digits.save('X_train', X_train)
-load_digits.save('X_test', X_test)
-load_digits.save('X_val', X_val)
-load_digits.save('y_val', y_val)
-load_digits.save('y_train', y_train)
-load_digits.save('y_test', y_test)
+load_digits.save('X_train', img_train)
+load_digits.save('X_test', img_test)
+load_digits.save('X_val', img_val)
+load_digits.save('y_train', label_train)
+load_digits.save('y_test', label_test)
+load_digits.save('y_val', label_val)
