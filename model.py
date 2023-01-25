@@ -1,6 +1,13 @@
 import numpy as np
 import scipy.io
 from sklearn.neighbors import KNeighborsClassifier
+from .dataset.test import newTest
+
+
+def train_model(X_train, y_train, N=3):
+    model = KNeighborsClassifier(n_neighbors=N)
+    model.fit(X_train, y_train)
+    return model
 
 
 mat = scipy.io.loadmat('dataset/Data_hoda_full.mat')
