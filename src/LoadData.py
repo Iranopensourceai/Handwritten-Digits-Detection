@@ -3,7 +3,6 @@ from scipy import ndimage
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-from skimage.transform import resize
 
 
 class LoadDigits:
@@ -20,43 +19,47 @@ class LoadDigits:
     # Method for resizing all arrays to a single shape
     @staticmethod
     def resize(array: np.array, desire_shape=(20, 20)):
+        """
+        Code for resizing images 
+        In case you need padding, you can uncomment following lines
+        """
         final_array = np.zeros(shape=(array.shape[0], desire_shape[0]*desire_shape[1]))
         for i, arr in enumerate(array):
             height_factor = desire_shape[0] / arr.shape[0]
-            width_factor = desire_shape[1] / arr.shape[1]
+            width_factor = desire_shape[1] / arr.shape[0]
+            # if arr.shape[0] < desire_shape[0] and arr.shape[1] < desire_shape[1]:
+            #     pad_needed = (desire_shape[0]-arr.shape[0])//2
+            #     arr = np.pad(arr, pad_needed, constant_values=0, mode='constant')
+            #     height_factor = desire_shape[0] / arr.shape[0]
+            #     width_factor = desire_shape[1] / arr.shape[1]
+
+            # elif arr.shape[1]/arr.shape[0] > 0.3:
+            #     height_factor = desire_shape[0]/arr.shape[0]
+            #     width_factor = desire_shape[1]/arr.shape[1]
+
+            # else:
+            #     pad_needed = abs((desire_shape[0] - arr.shape[1])//2)
+            #     arr = np.pad(arr, pad_needed, constant_values=0, mode='constant')
+            #     width_factor = desire_shape[1] / arr.shape[1]
+            #     height_factor = desire_shape[0]/arr.shape[0]
             mat = ndimage.zoom(arr, (height_factor, width_factor))
+            mat[mat > 80] = 255
+            mat[mat <= 80] = 0
             final_array[i] = mat.reshape(desire_shape[0]*desire_shape[1])
         return final_array/255
 
-    @staticmethod
-    def skimage_resize(images, desire_shape=(20, 20)):
-        array = np.zeros((images.shape[0], desire_shape[0]*desire_shape[1]))
-        for i, img in enumerate(images):
-            img = resize(img, desire_shape)
-            array[i] = img.reshape((desire_shape[0]*desire_shape[1]))
-        return array/255
 
-    # Splitting data to train set and test set
-    def read_dataset(self, val, desire_shape):
-        train_images = self.skimage_resize(np.squeeze(self.load_dict(self.train_mat_path)["Data"]),
+    # Splitting data to train, test and validation set
+    def read_dataset(self, desire_shape):
+        train_images = self.resize(np.squeeze(self.load_dict(self.train_mat_path)["Data"]),
                                            desire_shape=desire_shape)
         train_labels = np.squeeze(self.load_dict(self.train_mat_path)["labels"])
-        if val == 'remaining':
-            test_images = self.skimage_resize(np.squeeze(self.load_dict(self.test_mat_path)["Data"]),
-                                              desire_shape=desire_shape)
-            test_labels = np.squeeze(self.load_dict(self.test_mat_path)["labels"])
-            val_images = self.skimage_resize(np.squeeze(self.load_dict(self.remaining_mat_path)["Data"]),
-                                             desire_shape=desire_shape)
-            val_labels = np.squeeze(self.load_dict(self.remaining_mat_path)["labels"])
-        elif val == 'test':
-            test_images = self.skimage_resize(np.squeeze(self.load_dict(self.remaining_mat_path)["Data"],
-                                              desire_shape=desire_shape))
-            test_labels = np.squeeze(self.load_dict(self.remaining_mat_path)["labels"])
-            val_images = self.skimage_resize(np.squeeze(self.load_dict(self.test_mat_path)["Data"]),
-                                             desire_shape=desire_shape)
-            val_labels = np.squeeze(self.load_dict(self.test_mat_path)["labels"])
-        else:
-            raise ValueError("Invalid name for val argument use 'remaining' or 'test'")
+        test_images = self.resize(np.squeeze(self.load_dict(self.test_mat_path)["Data"]),
+                                            desire_shape=desire_shape)
+        test_labels = np.squeeze(self.load_dict(self.test_mat_path)["labels"])
+        val_images = self.resize(np.squeeze(self.load_dict(self.remaining_mat_path)["Data"]),
+                                            desire_shape=desire_shape)
+        val_labels = np.squeeze(self.load_dict(self.remaining_mat_path)["labels"])
         return train_images, train_labels, test_images, test_labels, val_images, val_labels
 
     # Plot 10 images from each 10 digit classes
@@ -80,11 +83,8 @@ TEST_DATASET_PATH = "data/Testset_Hoda.Mat"
 VAL_DATASET_PATH = "data/Remainingset_Hoda.Mat"
 load_digits = LoadDigits(TRAIN_DATASET_PATH, TEST_DATASET_PATH, VAL_DATASET_PATH)
 
-# pass 'remaining' or 'test' to choose your validation dataset
 shape = (20, 20)
-validation_set = 'remaining'
-img_train, label_train, img_test, label_test, img_val, label_val = load_digits.read_dataset(val=validation_set,
-                                                                                            desire_shape=shape)
+img_train, label_train, img_test, label_test, img_val, label_val = load_digits.read_dataset(desire_shape=shape)
 
 # load_digits.plot_digits(img_train, label_train, images_shape=shape)
 # load_digits.plot_digits(img_test, label_test, images_shape=shape)
