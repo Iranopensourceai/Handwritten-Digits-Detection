@@ -72,7 +72,7 @@ class LoadDigits:
     # Saving features and labels in .npy format
     @staticmethod
     def save(filename, file):
-        np.save(os.path.join('dataset', f'{filename}.npy'), file)
+        np.save(os.path.join('data', f'{filename}.npy'), file)
 
 
 TRAIN_DATASET_PATH = "data/Trainset_Hoda.mat"
