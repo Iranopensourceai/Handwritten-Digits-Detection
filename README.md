@@ -1,9 +1,12 @@
-# Classification-handwritten-of-Persian-digits-
+# Handwritten-Digits-Detection
  
-Identifying and reading the digits in the image is part of the process of reading the text in the image (OCR).
-In this work, to identify Persian digits in handwritten texts, we used the Hoda dataset, which is the first large dataset of Persian numerals and includes 102,353 examples of black and white images. 
-
+Recognition of handwritten characters and  digits  is  one of the most interesting topics in pattern recognition domain  which today is done by OCR applications.
+In this work, to identify Persian numerals in handwritten texts, we use the first large dataset of Persian numerals called  Hoda Dataset, which was collect from about 12,000 registration forms and recorded by scanners with a speed of 200 points per inch.
+ 
+https://www.sciencedirect.com/science/article/abs/pii/S0167865507000037
 ## Dataset
-This dataset contains 60,000 data for training, 20,000 data for testing and more than 22,000 as residual data.   
-   
+The dataset used in this work consists of 102353 binary images which 60,000 are reserved for training and 20,000 for testing data.
 
+Here, for greater convenience, all datasets have been converted into Mat files
+   
+## Method
